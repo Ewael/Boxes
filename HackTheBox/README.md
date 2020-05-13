@@ -12,6 +12,6 @@ For every box:
 
 ### Boxes
 
-- Blocky
+* Blocky
 
 ~ *Ewaël*
