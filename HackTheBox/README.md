@@ -18,4 +18,8 @@ For every box:
 * Blocky
 * Lame
 
+**Windows**
+
+* Blue
+
 ~ *Ewaël*

