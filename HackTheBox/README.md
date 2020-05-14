@@ -12,6 +12,9 @@ For every box:
 
 ### Boxes
 
+**Linux**
+
+* Lame
 * Blocky
 
 ~ *Ewaël*
