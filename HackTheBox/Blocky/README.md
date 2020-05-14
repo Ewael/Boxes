@@ -1,6 +1,6 @@
 # Blocky
 
-Auteur: Ewaël
+Author: Ewaël
 
 **Blocky** is an easy HackTheBox box by Arrexel.
 
