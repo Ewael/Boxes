@@ -21,5 +21,6 @@ For every box:
 **Windows**
 
 * Blue
+* Jerry
 
 ~ *Ewaël*

