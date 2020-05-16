@@ -10,9 +10,9 @@ For every box:
 
 - Other files, scripts, images for the writeup, downloaded resources...
 
-### Boxes
+## Boxes
 
-#### Easy
+### Easy
 
 **Linux**
 
@@ -26,7 +26,7 @@ For every box:
 * Blue
 * Jerry
 
-#### Medium
+### Medium
 
 **Linux**
 
