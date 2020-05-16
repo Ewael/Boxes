@@ -4,11 +4,11 @@ Author: Ewaël
 
 **Lazy** is a medium HackTheBox box by trickster0.
 
-`nmap -sC -sV -oN nmap 10.10.10.18 -v -A` shows port 80 and 22 are open. Let's start with the website:
+`nmap -sC -sV -oN nmap 10.10.10.18 -v -A` shows ports 80 and 22 are open. Let's start with the website:
 
 ![main](main.png)
 
-After trying some default creds for admin, I decide to register as "admi". Once I'm logged in, I see an `auth` cookie which I decide to decrypt:
+After trying some default creds for admin, I decide to register as "admi" when I see "admin" is taken already. Once I'm logged in, I see an `auth` cookie which I decide to decrypt:
 
 ```
 padbuster http://10.10.10.18 Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ 8 -cookies auth=Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ
