@@ -14,21 +14,21 @@ For every box:
 
 ### Easy
 
-**Linux**
+***Linux***
 
 * Bashed
 * Blocky
 * Lame
 * Traceback (still active - wu will be released when box is retired)
 
-**Windows**
+***Windows***
 
 * Blue
 * Jerry
 
 ### Medium
 
-**Linux**
+***Linux***
 
 * Lazy
 
