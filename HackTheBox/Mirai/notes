@@ -1,0 +1,27 @@
+nmap -sC -sV -oN nmap 10.10.10.48 -v -A
+
+port 80 open -> nothing
+dirb -> /admin
+
+didnt find default password
+we see it is a pi machine -> try to log in ssh with default creds
+pi:raspberry -> works
+
+user flag on desktop
+ff837707441b257a20e32199d7c8838d
+
+sudo -l -> can run all as root
+/root/root.txt:
+I lost my original root.txt! I think I may have a backup on my USB stick...
+
+on /media/usbstick -> damnit.txt:
+Damnit! Sorry man I accidentally deleted your files off the USB stick.
+Do you know if there is any way to get them back?
+
+-James
+
+no testdisk nor photorec
+but still can try strings on /dev/sdb - found with `mount`
+
+root flag:
+3d3e483143ff12ec505d026fa13e020b

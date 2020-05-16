@@ -19,6 +19,7 @@ For every box:
 * Bashed
 * Blocky
 * Lame
+* Mirai
 * Traceback (still active - wu will be released when box is retired)
 
 ***Windows***
