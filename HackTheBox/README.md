@@ -26,6 +26,7 @@ For every box:
 
 * Blue
 * Jerry
+* Netmon
 
 ### Medium
 
