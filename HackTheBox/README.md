@@ -12,6 +12,8 @@ For every box:
 
 ### Boxes
 
+#### Easy
+
 **Linux**
 
 * Bashed
@@ -23,5 +25,11 @@ For every box:
 
 * Blue
 * Jerry
+
+#### Medium
+
+**Linux**
+
+* Lazy
 
 ~ *Ewaël*
