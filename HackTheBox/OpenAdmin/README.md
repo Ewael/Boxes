@@ -94,9 +94,7 @@ ssh joanna@10.10.10.171 -i joanna_rsa
 
 I get the user flag:
 
-```
-c9b2cf07d40807e62af62660f0c81b5f
-```
+`c9b2cf07d40807e62af62660f0c81b5f`
 
 The first thing I do is `sudo -l` which shows I can run `/bin/nano` on `/opt/priv` as root. So I just have to `sudo nano /opt/priv`, CTRL-R to open a file and open `/root/root.txt`:
 
