@@ -32,9 +32,7 @@ My new `auth` cookie is `BAitGdYuupMjA3gl1aFoOwAAAAAAAAAA`, and allows me to be 
 
 With `mitsos` ssh key, `ssh mitsos@10.10.10.18 -i ssh_key` allows me to get my user flag in `mitsos` home dir:
 
-```
-d558e7924bdfe31266ec96b007dc63fc
-```
+`d558e7924bdfe31266ec96b007dc63fc`
 
 In this same directory there is a `backup` executable with root SUID which seems to print what is in `/etc/shadow`. A quick `ltrace ./backup` reveals me a very interesting information:
 
