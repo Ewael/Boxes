@@ -12,9 +12,7 @@ I try to log but the default *Pi-hole* password is randomly generated and basic 
 
 I obtain the user flag in `Desktop`:
 
-```
-ff837707441b257a20e32199d7c8838d
-```
+`ff837707441b257a20e32199d7c8838d`
 
 Then `sudo -l` shows I can run everything I want as root, but `/root/root.txt` contains a surprise:
 
@@ -37,6 +35,4 @@ As `photorec` and `testdisk` are not on the machine I use `mount` to find `usbst
 
 And I get the root flag:
 
-```
-3d3e483143ff12ec505d026fa13e020b
-```
+`3d3e483143ff12ec505d026fa13e020b`
