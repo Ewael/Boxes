@@ -20,6 +20,7 @@ For every box:
 * Blocky
 * Lame
 * Mirai
+* OpenAdmin
 * Traceback (still active - wu will be released when box is retired)
 
 ***Windows***
