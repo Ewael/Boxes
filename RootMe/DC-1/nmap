@@ -1,0 +1,60 @@
+# Nmap 7.80 scan initiated Thu May 21 15:56:52 2020 as: nmap -sC -sV -oN nmap -v -A 163.172.228.194
+Nmap scan report for ctf27.root-me.org (163.172.228.194)
+Host is up (0.011s latency).
+Not shown: 996 closed ports
+PORT    STATE    SERVICE VERSION
+22/tcp  open     ssh     OpenSSH 6.0p1 Debian 4+deb7u7 (protocol 2.0)
+| ssh-hostkey: 
+|   1024 c4:d6:59:e6:77:4c:22:7a:96:16:60:67:8b:42:48:8f (DSA)
+|   2048 11:82:fe:53:4e:dc:5b:32:7f:44:64:82:75:7d:d0:a0 (RSA)
+|_  256 3d:aa:98:5c:87:af:ea:84:b8:23:68:8d:b9:05:5f:d8 (ECDSA)
+25/tcp  filtered smtp
+80/tcp  open     http    Apache httpd 2.2.22 ((Debian))
+|_http-favicon: Unknown favicon MD5: B6341DFC213100C61DB4FB8775878CEC
+|_http-generator: Drupal 7 (http://drupal.org)
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+| http-robots.txt: 36 disallowed entries (15 shown)
+| /includes/ /misc/ /modules/ /profiles/ /scripts/ 
+| /themes/ /CHANGELOG.txt /cron.php /INSTALL.mysql.txt 
+| /INSTALL.pgsql.txt /INSTALL.sqlite.txt /install.php /INSTALL.txt 
+|_/LICENSE.txt /MAINTAINERS.txt
+|_http-server-header: Apache/2.2.22 (Debian)
+|_http-title: Welcome to Drupal Site | Drupal Site
+111/tcp open     rpcbind 2-4 (RPC #100000)
+| rpcinfo: 
+|   program version    port/proto  service
+|   100000  2,3,4        111/tcp   rpcbind
+|   100000  2,3,4        111/udp   rpcbind
+|   100000  3,4          111/tcp6  rpcbind
+|   100000  3,4          111/udp6  rpcbind
+|   100024  1          37888/tcp   status
+|   100024  1          44871/tcp6  status
+|   100024  1          47366/udp6  status
+|_  100024  1          54225/udp   status
+Device type: general purpose
+Running: Linux 3.X
+OS CPE: cpe:/o:linux:linux_kernel:3
+OS details: Linux 3.2 - 3.8
+Uptime guess: 198.046 days (since Tue Nov  5 13:50:26 2019)
+Network Distance: 10 hops
+TCP Sequence Prediction: Difficulty=261 (Good luck!)
+IP ID Sequence Generation: All zeros
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE (using port 5900/tcp)
+HOP RTT      ADDRESS
+1   5.77 ms  livebox.home (192.168.1.1)
+2   ...
+3   12.14 ms ae109-0.ncidf304.Neuilly-sur-marne.francetelecom.net (193.253.82.70)
+4   12.15 ms 81.253.180.30
+5   12.24 ms ae44-0.noidf002.Aubervilliers.francetelecom.net (193.252.99.106)
+6   12.28 ms 193.253.13.202
+7   ...
+8   15.46 ms 195.154.2.112
+9   12.36 ms 195.154.2.117
+10  12.38 ms ctf27.root-me.org (163.172.228.194)
+
+Read data files from: /usr/bin/../share/nmap
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu May 21 15:57:09 2020 -- 1 IP address (1 host up) scanned in 17.33 seconds

