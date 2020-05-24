@@ -22,6 +22,7 @@ For every box:
 * Mirai
 * OpenAdmin
 * Traceback (still active - wu will be released when box is retired)
+* Traverxec
 
 ***Windows***
 

