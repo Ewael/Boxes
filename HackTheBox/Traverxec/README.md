@@ -93,7 +93,7 @@ $ john --wordlist=/usr/share/wordlists/rockyou.txt david_hash
 
 `7db0b48469606a42cec20750d9782f3d`
 
-I still can't run `sudo -l` because neither `hunter` nor `Nowonly4me` are the correct passwords. There is a script in /home/david/bin named `server-stats.sh`:
+I still can't run `sudo -l` because neither `hunter` nor `Nowonly4me` are the correct passwords. There is a script in `/home/david/bin` named `server-stats.sh`:
 
 ```bash
 #!/bin/bash
@@ -108,6 +108,6 @@ echo "Last 5 journal log lines:"
 /usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service | /usr/bin/cat
 ```
 
-It shows that I can run `journalctl` with root rights using `/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service`. A quick search on [GTFOBins](https://gtfobins.github.io) shows me on to pop a root shell using `!/bin/sh` in the `less`. I can now read the root flag:
+It shows that I can run `journalctl` with root rights using `/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service`. A quick search on [GTFOBins](https://gtfobins.github.io) shows me on to pop a root shell using `!/bin/sh` when I am in the `less` command. I can now read the root flag:
 
 `9aa36a6d76f785dfd320a478f6e0d906`
