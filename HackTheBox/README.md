@@ -28,6 +28,7 @@ For every box:
 
 * Blue
 * Jerry
+* Nest (still active - wu will be released when box is retired)
 * Netmon
 
 ### Medium
