@@ -18,6 +18,7 @@ For every box:
 
 * Bashed
 * Blocky
+* Blunder (still active - wu will be released when box is retired)
 * Lame
 * Mirai
 * OpenAdmin
