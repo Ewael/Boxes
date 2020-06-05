@@ -2,4 +2,4 @@
 
 Author: Ewaël
 
-**Traceback** is still and active box. Writeup and files will be released when the box is retired.
+**Traceback** is still an active box. Writeup and files will be released when the box is retired.
