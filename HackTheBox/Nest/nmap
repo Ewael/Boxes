@@ -1,0 +1,34 @@
+# Nmap 7.80 scan initiated Wed May 27 15:42:46 2020 as: nmap -sC -sV -oN nmap -v -A 10.10.10.178
+Nmap scan report for 10.10.10.178
+Host is up (0.015s latency).
+Not shown: 999 filtered ports
+PORT    STATE SERVICE       VERSION
+445/tcp open  microsoft-ds?
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose|phone|specialized
+Running (JUST GUESSING): Microsoft Windows 8|Phone|2008|7|8.1|Vista|2012 (92%)
+OS CPE: cpe:/o:microsoft:windows_8 cpe:/o:microsoft:windows cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7 cpe:/o:microsoft:windows_8.1 cpe:/o:microsoft:windows_vista::- cpe:/o:microsoft:windows_vista::sp1 cpe:/o:microsoft:windows_server_2012
+Aggressive OS guesses: Microsoft Windows 8.1 Update 1 (92%), Microsoft Windows Phone 7.5 or 8.0 (92%), Microsoft Windows 7 or Windows Server 2008 R2 (91%), Microsoft Windows Server 2008 R2 (91%), Microsoft Windows Server 2008 R2 or Windows 8.1 (91%), Microsoft Windows Server 2008 R2 SP1 or Windows 8 (91%), Microsoft Windows 7 (91%), Microsoft Windows 7 Professional or Windows 8 (91%), Microsoft Windows 7 SP1 or Windows Server 2008 R2 (91%), Microsoft Windows Vista SP0 or SP1, Windows Server 2008 SP1, or Windows 7 (91%)
+No exact OS matches for host (test conditions non-ideal).
+Uptime guess: 0.140 days (since Wed May 27 12:21:54 2020)
+Network Distance: 2 hops
+TCP Sequence Prediction: Difficulty=261 (Good luck!)
+IP ID Sequence Generation: Incremental
+
+Host script results:
+|_clock-skew: 3m03s
+| smb2-security-mode: 
+|   2.02: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2020-05-27T19:46:12
+|_  start_date: 2020-05-27T16:25:51
+
+TRACEROUTE (using port 445/tcp)
+HOP RTT      ADDRESS
+1   14.24 ms 10.10.14.1
+2   14.39 ms 10.10.10.178
+
+Read data files from: /usr/bin/../share/nmap
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Wed May 27 15:43:43 2020 -- 1 IP address (1 host up) scanned in 56.74 seconds
