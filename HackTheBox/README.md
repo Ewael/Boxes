@@ -31,6 +31,7 @@ For every box:
 * Jerry
 * Nest
 * Netmon
+* Sauna (still active - wu will be released when box is retired)
 * ServMon (still active - wu will be released when box is retired)
 
 ### Medium
