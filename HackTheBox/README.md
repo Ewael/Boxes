@@ -31,6 +31,7 @@ For every box:
 * Blue
 * Buff (still active - wu will be released when box is retired)
 * Jerry
+* Legacy
 * Nest
 * Netmon
 * Remote (still active - wu will be released when box is retired)
