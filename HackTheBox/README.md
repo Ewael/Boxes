@@ -46,5 +46,6 @@ For every box:
 * Cache (still active - wu will be released when box is retired)
 * Lazy
 * Magic (still active - wu will be released when box is retired)
+* SneakyMailer (still active - wu will be released when box is retired)
 
 ~ *Ewaël*
