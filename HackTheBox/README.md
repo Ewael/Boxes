@@ -45,7 +45,13 @@ For every box:
 * Book
 * Cache (still active - wu will be released when box is retired)
 * Lazy
-* Magic (still active - wu will be released when box is retired)
+* Magic
 * SneakyMailer (still active - wu will be released when box is retired)
+
+### Hard
+
+***Linux***
+
+* Falafel
 
 ~ *Ewaël*
