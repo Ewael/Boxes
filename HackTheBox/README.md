@@ -23,7 +23,7 @@ For every box:
 * Mirai
 * OpenAdmin
 * Tabby (still active - wu will be released when box is retired)
-* Traceback (still active - wu will be released when box is retired)
+* Traceback
 * Traverxec
 
 ***Windows***

