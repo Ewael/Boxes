@@ -34,9 +34,13 @@ For every box:
 * Legacy
 * Nest
 * Netmon
-* Remote (still active - wu will be released when box is retired)
+* Remote
 * Sauna
 * ServMon
+
+***Other***
+
+* Omni (still active - wu will be released when box is retired)
 
 ### Medium
 
