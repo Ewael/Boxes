@@ -18,7 +18,7 @@ For every box:
 
 * Bashed
 * Blocky
-* Blunder (still active - wu will be released when box is retired)
+* Blunder
 * Lame
 * Mirai
 * OpenAdmin
@@ -47,7 +47,7 @@ For every box:
 ***Linux***
 
 * Book
-* Cache (still active - wu will be released when box is retired)
+* Cache
 * Lazy
 * Magic
 * SneakyMailer (still active - wu will be released when box is retired)

