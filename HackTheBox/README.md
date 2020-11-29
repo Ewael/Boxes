@@ -22,14 +22,14 @@ For every box:
 * Lame
 * Mirai
 * OpenAdmin
-* Tabby (still active - wu will be released when box is retired)
+* Tabby
 * Traceback
 * Traverxec
 
 ***Windows***
 
 * Blue
-* Buff (still active - wu will be released when box is retired)
+* Buff
 * Jerry
 * Legacy
 * Nest
@@ -50,7 +50,7 @@ For every box:
 * Cache
 * Lazy
 * Magic
-* SneakyMailer (still active - wu will be released when box is retired)
+* SneakyMailer
 
 ### Hard
 

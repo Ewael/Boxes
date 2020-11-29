@@ -1,0 +1,77 @@
+# Nmap 7.80 scan initiated Thu Aug  6 11:43:05 2020 as: nmap -sC -sV -oN nmap -v -A 10.10.10.197
+Nmap scan report for 10.10.10.197
+Host is up (0.014s latency).
+Not shown: 993 closed ports
+PORT     STATE SERVICE  VERSION
+21/tcp   open  ftp      vsftpd 3.0.3
+22/tcp   open  ssh      OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+| ssh-hostkey: 
+|   2048 57:c9:00:35:36:56:e6:6f:f6:de:86:40:b2:ee:3e:fd (RSA)
+|   256 d8:21:23:28:1d:b8:30:46:e2:67:2d:59:65:f0:0a:05 (ECDSA)
+|_  256 5e:4f:23:4e:d4:90:8e:e9:5e:89:74:b3:19:0c:fc:1a (ED25519)
+25/tcp   open  smtp     Postfix smtpd
+|_smtp-commands: debian, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN, SMTPUTF8, CHUNKING, 
+80/tcp   open  http     nginx 1.14.2
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-server-header: nginx/1.14.2
+|_http-title: Did not follow redirect to http://sneakycorp.htb
+143/tcp  open  imap     Courier Imapd (released 2018)
+|_imap-capabilities: THREAD=ORDEREDSUBJECT NAMESPACE STARTTLS UTF8=ACCEPTA0001 ACL CAPABILITY CHILDREN ENABLE ACL2=UNION THREAD=REFERENCES IDLE SORT completed QUOTA OK UIDPLUS IMAP4rev1
+| ssl-cert: Subject: commonName=localhost/organizationName=Courier Mail Server/stateOrProvinceName=NY/countryName=US
+| Subject Alternative Name: email:postmaster@example.com
+| Issuer: commonName=localhost/organizationName=Courier Mail Server/stateOrProvinceName=NY/countryName=US
+| Public Key type: rsa
+| Public Key bits: 3072
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2020-05-14T17:14:21
+| Not valid after:  2021-05-14T17:14:21
+| MD5:   3faf 4166 f274 83c5 8161 03ed f9c2 0308
+|_SHA-1: f79f 040b 2cd7 afe0 31fa 08c3 b30a 5ff5 7b63 566c
+|_ssl-date: TLS randomness does not represent time
+993/tcp  open  ssl/imap Courier Imapd (released 2018)
+|_imap-capabilities: THREAD=ORDEREDSUBJECT NAMESPACE IMAP4rev1 AUTH=PLAIN ACL CAPABILITY CHILDREN ENABLE ACL2=UNION THREAD=REFERENCES IDLE SORT completed QUOTA OK UIDPLUS UTF8=ACCEPTA0001
+| ssl-cert: Subject: commonName=localhost/organizationName=Courier Mail Server/stateOrProvinceName=NY/countryName=US
+| Subject Alternative Name: email:postmaster@example.com
+| Issuer: commonName=localhost/organizationName=Courier Mail Server/stateOrProvinceName=NY/countryName=US
+| Public Key type: rsa
+| Public Key bits: 3072
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2020-05-14T17:14:21
+| Not valid after:  2021-05-14T17:14:21
+| MD5:   3faf 4166 f274 83c5 8161 03ed f9c2 0308
+|_SHA-1: f79f 040b 2cd7 afe0 31fa 08c3 b30a 5ff5 7b63 566c
+|_ssl-date: TLS randomness does not represent time
+8080/tcp open  http     nginx 1.14.2
+| http-methods: 
+|_  Supported Methods: GET HEAD
+|_http-open-proxy: Proxy might be redirecting requests
+|_http-server-header: nginx/1.14.2
+|_http-title: Welcome to nginx!
+No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+TCP/IP fingerprint:
+OS:SCAN(V=7.80%E=4%D=8/6%OT=21%CT=1%CU=39261%PV=Y%DS=2%DC=T%G=Y%TM=5F2C2542
+OS:%P=x86_64-pc-linux-gnu)SEQ(SP=FF%GCD=1%ISR=10C%TI=Z%CI=Z%II=I%TS=A)OPS(O
+OS:1=M54DST11NW7%O2=M54DST11NW7%O3=M54DNNT11NW7%O4=M54DST11NW7%O5=M54DST11N
+OS:W7%O6=M54DST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN(R
+OS:=Y%DF=Y%T=40%W=FAF0%O=M54DNNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F=AS%
+OS:RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5(R=Y
+OS:%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R
+OS:%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%T=
+OS:40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%CD=S
+OS:)
+
+Uptime guess: 35.685 days (since Wed Jul  1 19:17:14 2020)
+Network Distance: 2 hops
+TCP Sequence Prediction: Difficulty=255 (Good luck!)
+IP ID Sequence Generation: All zeros
+Service Info: Host:  debian; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE (using port 1720/tcp)
+HOP RTT      ADDRESS
+1   12.20 ms 10.10.14.1
+2   12.40 ms 10.10.10.197
+
+Read data files from: /usr/bin/../share/nmap
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Aug  6 11:44:02 2020 -- 1 IP address (1 host up) scanned in 57.01 seconds
