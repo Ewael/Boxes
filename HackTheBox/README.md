@@ -40,7 +40,7 @@ For every box:
 
 ***Other***
 
-* Omni (still active - wu will be released when box is retired)
+* Omni
 
 ### Medium
 
